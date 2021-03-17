@@ -227,3 +227,107 @@ save(simresults, file = paste0(path.work,"/simresults.RData"))
 
 
 sfStop()
+
+#### Create Results Tables ####
+library(kableExtra)
+
+#### Mean coefficient estimates (percent bias relative to estimate in SRS)
+
+mean.coef.comb = function(results, colname){
+  apply(do.call("rbind",lapply(results,function(x){x[[colname]][,"coef"]})),2,mean)
+}
+
+mean.coef = function(results, colname){
+  apply(do.call("rbind",lapply(results,function(x){x[[colname]]})),2,mean)
+}
+
+
+pt.out = round(cbind(mean.coef(simresults,"beta.rep"),
+               mean.coef(simresults,"beta.bias.unwt"),
+               mean.coef(simresults,"beta.bias.truewt"),
+               mean.coef.comb(simresults,"est.log"),
+               mean.coef.comb(simresults,"est.cbps"),
+               mean.coef.comb(simresults,"est.eb"),
+               mean.coef.comb(simresults,"est.rf")),3)
+
+colnames(pt.out) = c("NHNone","C2CNone","True", "Logistic","CBPS","EB", "RF")
+
+# Add percent bias
+pbias = function(tab, colname){
+  (tab[,colname] - tab[,"NHNone"])/tab[,"NHNone"]
+}
+
+pbias.out = cbind(rep("",4),
+                  round(do.call("cbind",lapply(colnames(pt.out)[-1],function(x){pbias(pt.out,x)})),2))
+
+# combine estimates and % bias
+pt.out1 = cbind(pt.out[,1],
+                matrix(paste0(pt.out[,-1]," (",pbias.out[,-1],")"), nrow = 4))
+
+
+
+rownames(pt.out1) = c("Intercept", "Hispanic", "NH Asian", "NH Black")
+
+colnames(pt.out1) = c("No weights","No weights","True weights", "Logistic","CBPS","EB", "RF")
+
+# format the table for Latex
+k = kable(pt.out1, format = 'latex', booktabs = TRUE,
+          caption = NULL)%>%
+  kable_styling(latex_options = c("hold_position", "scale_down"))
+
+add_header_above(k, c(" "=1,"SRS" = 1,
+                      "Biased Sample" = 6))
+
+
+dimnames(pbias.out) = dimnames(pt.out)
+kable.booktab(pbias.out,fittopagewidth = TRUE)
+
+#### Standard Error Estimates
+
+# Get empirical SE and mean analytic SE
+SE.est = function(results, colname){
+  # empirical SE
+  empirical = apply(do.call("rbind",lapply(results,function(x){x[[colname]][,"coef"]})),2,sd)
+  # mean analytic SE
+  analytic = apply(do.call("rbind",lapply(results,function(x){x[[colname]][,"analyticSE"]})),2,mean)
+  cbind(empirical, analytic)
+}
+
+# Get mean BS estimate of SE (remove any unestimable coefficients: magnitude over 100)
+bs.est = function(results, colname){
+  apply(do.call("rbind",
+                lapply(results,function(x){
+                  bs = x[[colname]]
+                  repbig = ifelse(abs(bs)>1000,NA,bs)
+                  apply(repbig,2,function(z){
+                    sd(z,na.rm = TRUE)
+                  })})),2,mean)}
+
+# SE in representative sample
+SE.rep = apply(do.call("rbind",lapply(simresults,function(x){x[["beta.rep"]]})),2,sd)
+SE.bias.unweight = apply(do.call("rbind",lapply(simresults,function(x){x[["beta.bias.unwt"]]})),2,sd)
+SE.bias.truweight = apply(do.call("rbind",lapply(simresults,function(x){x[["beta.bias.truewt"]]})),2,sd)
+
+se.out = round(cbind(SE.rep,SE.bias.unweight,SE.bias.truweight,
+                SE.est(simresults, "est.log"),
+                bs.est(simresults, "beta.boot.log"),
+                SE.est(simresults, "est.cbps"),
+                bs.est(simresults, "beta.boot.cbps"),
+                SE.est(simresults, "est.eb"),
+                bs.est(simresults, "beta.boot.eb"),
+                SE.est(simresults, "est.rf"),
+                bs.est(simresults, "beta.boot.rf")),2)
+
+colnames(se.out) = c(rep("Emp.",3),rep(c("Emp.","Analytic","BS"),4))
+rownames(se.out) = c("Intercept", "Hispanic", "NH Asian", "NH Black")
+
+k = kable(se.out, format = 'latex', booktabs = TRUE,
+          caption = NULL)%>%
+  kable_styling(latex_options = c("hold_position", "scale_down"))
+
+k1 = add_header_above(k, c(" "=1,"No weights","No weights", "True weights","Logistic" = 3,
+                      "CBPS" = 3,
+                      "Entropy Balancing" = 3,
+                      "Random Forest" = 3))
+
+add_header_above(k1, c(" "=1,"SRS","Biased Sample" = 14))
