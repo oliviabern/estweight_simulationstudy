@@ -33,7 +33,7 @@ n.b = 500
 
 # simulation size
 n.sim = 1000
-n.boot = 250
+n.boot = 200
 
 # Calculate probability of being oversampled and true HT weight
 sampprob = expit(.5*(nhanes_rep$female*.3 + (nhanes_rep$edu=="highschool")*.5 + (nhanes_rep$edu=="lessthan12")*.2 + (nhanes_rep$edu=="somecollege")*.8 + 
@@ -199,7 +199,7 @@ sim = function(simcount){
 }
 
 
-sfInit(parallel = TRUE,cpus = 1) # edit number of CPUS based on availability
+sfInit(parallel = TRUE,cpus = 40) # edit number of CPUS based on availability
 sfExport("sim")
 sfExport("expit")
 sfExport("n.r")
@@ -214,7 +214,7 @@ sfLibrary(entbal)
 sfLibrary(CBPS)
 sfLibrary(estweight)
 sfLibrary(splitstackshape)
-sfClusterSetupRNG(type="RNGstream", seed = 10403)
+sfClusterSetupRNG(type="RNGstream", seed = 2012688935)
 
 start = Sys.time()
 

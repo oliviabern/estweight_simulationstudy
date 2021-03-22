@@ -8,6 +8,8 @@
 #
 # This code can be adapted to select different variables and 
 # adjust the aggregation
+#
+# Data can be downloaded from https://wwwn.cdc.gov/nchs/nhanes/Default.aspx
 
 #### Select directories (EDIT THESE TO INCLUDE THE CORRECT PATHS) ####
 
