@@ -1,6 +1,6 @@
 # Simulation study to assess the bias and variance estimates
 # Olivia Bernstein
-# 1/7/21
+# 3/23/21
 
 #### Load packages ####
 library("tidyverse")
@@ -277,10 +277,6 @@ k = kable(pt.out1, format = 'latex', booktabs = TRUE,
 
 add_header_above(k, c(" "=1,"SRS" = 1,
                       "Biased Sample" = 6))
-
-
-dimnames(pbias.out) = dimnames(pt.out)
-kable.booktab(pbias.out,fittopagewidth = TRUE)
 
 #### Standard Error Estimates
 
