@@ -1,4 +1,4 @@
-# Code for the simulation study presented in "Adjustment for Biased Sampling Using NHANES Derived Propensity Weights"
+## Code for the simulation study presented in "Adjustment for Biased Sampling Using NHANES Derived Propensity Weights"
 
 The file create_nhanes_rep.R contains code for cleaning NHANES data and producing the NHANES-REP dataset. NHANES data can be downloaded from https://wwwn.cdc.gov/nchs/nhanes/Default.aspx
 
